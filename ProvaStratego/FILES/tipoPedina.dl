@@ -1,0 +1,5 @@
+pedina(soldato,2).
+pedina(generale,4).
+pedina(miniere,3).
+pedina(bomba,100).
+pedina(bandiera,1).

@@ -1,0 +1,94 @@
+#maxint= 10000.
+
+riga(0..9).
+colonna(0..9).
+cella(X,Y):- riga(X), colonna(Y).
+
+
+muovi(S,X,Y) v nomuovi(S,X,Y):-posiziona(S,X,Y).
+:-muovi(bomba,X,Y).
+:-muovi(bandiera,X,Y).
+
+%verifica se una cella è occupata 
+occupata(X,Y):-posiziona(P,X,Y),cella(X,Y),P!=avversario.
+libera(X,Y):-not occupata(X,Y),cella(X,Y).
+
+
+%verifica se esiste una cella libera in una precisa direzione
+%sopra
+esistelibera(X,Y):-posiziona(S,X,Y),libera(X1,Y),X1=X+1,X!=9.
+%dietro
+esistelibera(X,Y):-posiziona(S,X,Y),libera(X1,Y),X1=X-1,X!=0.
+%destra
+esistelibera(X,Y):-posiziona(S,X,Y),libera(X,Y1),Y1=Y+1,Y!=9.
+%sinistra
+esistelibera(X,Y):-posiziona(S,X,Y),libera(X,Y1),Y1=Y-1,Y!=0.
+
+:-muovi(S,X,Y),not esistelibera(X,Y).
+
+%muovi in base al livello
+livello(S,S1):-pedina(S,C),pedina(S1,C1),C>C1.
+:~muovi(S,X,Y),posiziona(S1,X1,Y),livello(S,S1),X1=X-1,X!=9. [1:1]
+
+
+:~nomuovi(S,X,Y),pedina(S,C),#int(C). [C:1]
+
+:-coord(X1, X2),laghi(X1, X2).
+
+:-not #count{S,X,Y:muovi(S,X,Y)}=1.
+%non muovere i minieri se ci sono altri soldati.
+contaMinieri(N):- #count {X,Y:posiziona(miniere,X,Y)}=N,#int(N).
+contaSoldati(N):-#count {X,Y:posiziona(S,X,Y),S=soldato}=N,#int(N).
+contaGenerali(N):-#count {X,Y:posiziona(S,X,Y),S=generale}=N,#int(N).
+contaAlleati(N):- contaSoldati(N1),contaGenerali(N2),N=N1+N2.
+:-muovi(miniere,X,Y),contaAlleati(N),contaMinieri(N1),N1=1,contaAlleati!=0.
+
+%posizione dopo la mossa
+coordinate(X1,Y):-muovi(S,X,Y),posiziona(S,X,Y),libera(X1,Y),X1=X+1,X!=9.
+coordinate(X1,Y):-muovi(S,X,Y),posiziona(S,X,Y),libera(X1,Y),X1=X-1,X!=0.
+coordinate(X,Y1):-muovi(S,X,Y),posiziona(S,X,Y),libera(X,Y1),Y1=Y+1,Y!=9.
+coordinate(X,Y1):-muovi(S,X,Y),posiziona(S,X,Y),libera(X,Y1),Y1=Y-1,Y!=0.
+
+
+%muovi quelli con nemici davanti, precedenza all'attacco...
+posizioneAvversario(X,Y):-muovi(S,X,Y),posiziona(avversario,X1,Y),X1=X+1,X!=9.
+posizioneAvversario(X,Y):-muovi(S,X,Y),posiziona(avversario,X1,Y),X1=X-1,X!=0.
+posizioneAvversario(X,Y):-muovi(S,X,Y),posiziona(avversario,X,Y1),Y1=Y+1,Y!=9.
+posizioneAvversario(X,Y):-muovi(S,X,Y),posiziona(avversario,X,Y1),Y1=Y-1,Y!=0.
+
+%muovi prima quelli con un nemico davanti e con grado massimo
+:~muovi(S,X,Y),not posizioneAvversario(X,Y). [1:3]
+
+%nn muovere piu generale arrivato all ultima fila.
+:~muovi(S,10,Y),posiziona(generale,X,Y),X=10. [1:4]
+
+
+
+%cella sopra libera
+%coord(X,Y):- coordinate(X,Y),muovi(P, X1, X2),X=X1+1,libera(X,Y).
+%movGenerale():-coord(X,Y),muovi(generale, X1, Y1),N=X1+1,X!=N.
+%:~ movGenerale(). [2:1]
+
+%cella sopra attacco
+coord(X,Y):- coordinate(X,Y),muovi(generale, X1, X2),X=X1+1.
+coord(X,Y):- coordinate(X,Y),muovi(soldato, X1, X2),X=X1+1.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
