@@ -21,10 +21,12 @@ public class selectionModels extends JFrame {
 	private JList lista;
 	private int index;
 	private Object tmp;
+	private Scacchiera scacchieraLista;
 
-	public selectionModels() {
+	public selectionModels(Scacchiera scacchieraGame) {
 
 		index = 0;
+		this.scacchieraLista=scacchieraGame;
 
 		String[] schemi = { "Cyclone Defense", "The Tempest Defense",
 				"Tripple Threat", "Scout's Gambit", "On Guard!",
@@ -74,10 +76,12 @@ public class selectionModels extends JFrame {
 			public void mousePressed(MouseEvent mouseEvent) {
 
 				index = lista.locationToIndex(mouseEvent.getPoint());
+				
 				if (index >= 0) {
 					Object o = lista.getModel().getElementAt(index);
 					System.out.println("Stai selezionando: " + o.toString());
 					System.out.println("INDICE: " + index);
+					
 				}
 
 			}
@@ -89,6 +93,7 @@ public class selectionModels extends JFrame {
 			public void mousePressed(MouseEvent mouseEvent) {
 
 				System.out.println("start");
+				scacchieraLista.aggiornaScacchieraPlayer(index+1);
 				setVisible(false);
 				((AbstractButton) tmp).setEnabled(true);
 
@@ -103,6 +108,11 @@ public class selectionModels extends JFrame {
 
 	public void enableButton(JButton button) {
 		tmp = button;
+	}
+	
+	public int getIndexModel()
+	{
+		return index;
 	}
 
 }

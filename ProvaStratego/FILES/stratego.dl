@@ -5,7 +5,7 @@ colonna(0..9).
 cella(X,Y):- riga(X), colonna(Y).
 
 
-muovi(S,X,Y) v nomuovi(S,X,Y):-posiziona(S,X,Y).
+muovi(S,X,Y) v nomuovi(S,X,Y):-posiziona(S,X,Y),S!=avversario.
 :-muovi(bomba,X,Y).
 :-muovi(bandiera,X,Y).
 

@@ -16,16 +16,18 @@ import javax.swing.JPanel;
 
 import dlvWrapper.DLVManager;
 
-class C_Scacchiera extends JPanel
+class Scacchiera extends JPanel
 {
-
+	static int spazio;
 	private final int dimensione;
 	private Image cellaPiena;
 	private Image lagoImg;
 	private Image cellaLibera;
 	private Image generaleAvversario;
+	private Image sfondo;
 	private boolean primaselezione;
 	private int mossaX, mossaY;
+	public boolean canMoveDlv;
 
 	private final GestoreModelli modello= new GestoreModelli();
 	private DLVManager dlvManager;
@@ -35,13 +37,13 @@ class C_Scacchiera extends JPanel
 	// funzioni per accedere a i file di windows...
 	private Toolkit tool;
 
-	public C_Scacchiera()
+	public Scacchiera()
 	{ // senza void !! e' un "costruttore"
 		dimensione= 2;
 		// new C_Scacchiera();
 	} // C_Scacchiera
 
-	public C_Scacchiera(int bas, int alt, int dim)
+	public Scacchiera(int bas, int alt, int dim)
 	{
 
 		primaselezione= true;
@@ -50,10 +52,10 @@ class C_Scacchiera extends JPanel
 		dimensione= dim; // C_Scacchiera scacchiera =
 		// new C_Scacchiera(base, altezza, dimensione);
 		modello.fillMatrix("FILES/models.txt");
-		modello.setIndexModello(1);
-		modello.fillMatrix("FILES/modelloGiocatore.txt");
+
 
 		this.setOpaque(false);
+
 
 		dlvManager= new DLVManager();
 
@@ -62,14 +64,16 @@ class C_Scacchiera extends JPanel
 		this.media= new MediaTracker(this);
 		cellaPiena= tool.getImage("./src/orks.png");
 		lagoImg= tool.getImage("./src/lago.png");
+		sfondo=tool.getImage("./src/Prato.jpg");
 
-		cellaLibera= tool.getImage("./src/Immagine.png");
+		cellaLibera= tool.getImage("./src/vuota.png");
 		generaleAvversario= tool.getImage("./src/ranged.png");
 
 		media.addImage(cellaPiena, 0);
 		media.addImage(lagoImg, 1);
 		media.addImage(cellaLibera, 2);
 		media.addImage(generaleAvversario, 3);
+		media.addImage(sfondo, 4);
 
 		try
 		{
@@ -82,6 +86,7 @@ class C_Scacchiera extends JPanel
 
 		this.addMouseListener(new MouseAdapter()
 		{
+
 			@Override
 			public void mousePressed(MouseEvent e)
 			{
@@ -143,6 +148,9 @@ class C_Scacchiera extends JPanel
 		int lato= (latox > latoy) ? latoy : latox; // il piu'piccolo
 
 		int spazioRettangolo= lato / dimensione; // spazio per un rettangolo;
+		this.spazio=spazioRettangolo;
+		g.drawImage(sfondo,35,5,spazioRettangolo*10,spazioRettangolo*10,null);//colore sfondo schacchiera;
+
 		int x, y;
 		Graphics2D g2= (Graphics2D) g; // modo abituale per
 		// ottenere l'ambiente grafico g in versione 2D (nuova) :
@@ -160,6 +168,7 @@ class C_Scacchiera extends JPanel
 				// locale a queste parentesi:
 				Rectangle cella= new Rectangle(x + 5, y + 5, spazioRettangolo,
 						spazioRettangolo);
+
 				try
 				{
 					switch (modello.getTipoPedina(riga, col))
@@ -212,16 +221,19 @@ class C_Scacchiera extends JPanel
 
 		} // for riga = for y
 
+		Repaint();
+
 	} // paintComponent
 
 	public void Repaint()
 	{
+
 		this.repaint();
 	}
 
 	public void muovi(int riga, int col)
 	{
-
+		canMoveDlv=false;
 		if (primaselezione == true && !modello.cellaVuota(riga, col)
 				&& modello.verificaPedina(modello.getTipoPedina(riga, col)))
 		{
@@ -241,6 +253,8 @@ class C_Scacchiera extends JPanel
 						+ modello.getTipoPedina(riga, col));
 				modello.setCella(mossaX, mossaY, "0");
 
+				mossaDlv();
+
 				primaselezione= true;
 			}
 			if (!modello.cellaVuota(riga, col) && primaselezione != true
@@ -257,55 +271,15 @@ class C_Scacchiera extends JPanel
 
 	public void mossaDlv()
 	{
-		// modello.aggiornaFatti();
+		 
 		try
 		{
 			dlvManager.createMove();
 
-			if (!modello.cellaVuota(dlvManager.getCoordFromX(),
-					dlvManager.getCoordFromY())
-					&& modello.verificaPedina(modello.getTipoPedina(
-							dlvManager.getCoordFromX(),
-							dlvManager.getCoordFromY())))
-			{
-				mossaX= dlvManager.getCoordFromX();
-				mossaY= dlvManager.getCoordFromY();
-
-				System.out.println("hai selezionato un "
-						+ modello.getTipoPedina(dlvManager.getCoordFromX(),
-								dlvManager.getCoordFromY()));
-			} else
-			{
-				if (modello.cellaVuota(dlvManager.getCoordFromX(),
-						dlvManager.getCoordFromY())
-						&& modello.verificaAdiacenza(mossaX, mossaY,
-								dlvManager.getCoordFromX(),
-								dlvManager.getCoordFromY()))
-				{
-					modello.setCella(dlvManager.getCoordFromX(),
-							dlvManager.getCoordFromY(),
-							modello.getTipoPedina(mossaX, mossaY));
-					System.out.println("hai spostato "
-							+ modello.getTipoPedina(dlvManager.getCoordFromX(),
-									dlvManager.getCoordFromY()));
-
-					modello.setCella(mossaX, mossaY, "0");
-				}
-				if (!modello.cellaVuota(dlvManager.getCoordFromX(),
-						dlvManager.getCoordFromY())
-						&& modello.verificaPedina(modello.getTipoPedina(
-								dlvManager.getCoordFromX(),
-								dlvManager.getCoordFromY())))
-				{
-					mossaX= dlvManager.getCoordFromX();
-					mossaY= dlvManager.getCoordFromY();
-					System.out.println("hai selezionato un "
-							+ modello.getTipoPedina(dlvManager.getCoordFromX(),
-									dlvManager.getCoordFromY()));
-				}
-			}
+			modello.setCella(dlvManager.getCoordToX(), dlvManager.getCoordToY(),modello.getTipoPedina(dlvManager.getCoordFromX(),dlvManager.getCoordFromY()));
+            modello.setCella(dlvManager.getCoordFromX(), dlvManager.getCoordFromY(), "0");
 			Repaint();
-
+			modello.aggiornaFatti();
 		} catch (DLVInvocationException e)
 		{
 			// TODO Auto-generated catch block
@@ -315,6 +289,13 @@ class C_Scacchiera extends JPanel
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public void aggiornaScacchieraPlayer(int index)
+	{
+		modello.setIndexModello(index);
+		modello.fillMatrix("FILES/modelloGiocatore.txt");
+		this.Repaint();
 	}
 
 } // C_Scacchiera
